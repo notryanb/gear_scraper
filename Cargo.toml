@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 reqwest = "0.9"
 unhtml = "0.6"
+unhtml_derive = "0.5"
