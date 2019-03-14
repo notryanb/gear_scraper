@@ -2,6 +2,7 @@
 extern crate unhtml_derive;
 extern crate unhtml;
 
+use std::fmt;
 use unhtml::{FromHtml, VecFromHtml};
 
 fn main() -> Result<(), Box<std::error::Error>> {
@@ -32,12 +33,9 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
         #[html(selector = "a.result-title", attr = "inner", default = "--")]
         pub title: String,
-    }
 
-    #[derive(Debug, FromHtml)]
-    struct ResultMetas {
-        #[html(selector = "span.result-meta")]
-        pub results: Vec<ResultMeta>,
+        #[html(selector = "span.result-meta", default = "--")]
+        pub meta: ResultMeta,
     }
 
     #[derive(Debug, FromHtml)]
@@ -49,13 +47,23 @@ fn main() -> Result<(), Box<std::error::Error>> {
         pub neighborhood: String,
     }
 
+    impl fmt::Display for ResultRow {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Posting =====================\npid: {}\ntitle: {}\ndatetime: {}\nurl: {}\nprice: {}\nlocation: {}\n\n",
+                self.pid,
+                self.result_info.title,
+                self.result_info.date_time,
+                self.posting_url,
+                self.result_info.meta.price,
+                self.result_info.meta.neighborhood
+            )
+        }
+    }
+
     let result_metas = SearchResults::from_html(&escaped_html_text)?;
 
     for result in result_metas.results {
-        println!(
-            "PID: {}, DateTime: {:?}, Title: {:?},  URL: {}",
-            result.pid, result.result_info.date_time, result.result_info.title, result.posting_url
-        );
+        println!("{}", result);
     }
 
     Ok(())
