@@ -6,99 +6,28 @@ extern crate unhtml;
 use unhtml::{FromHtml, VecFromHtml};
 
 fn main() -> Result<(), Box<std::error::Error>> {
-    // let escaped_html_text = reqwest::get("https://longisland.craigslist.org/search/msa")?.text()?;
-
-
-    // #[derive(Debug, FromHtml)]
-    // struct ResultMeta {
-    //     #[html(selector = "span:nth-child(1)", attr = "inner")]
-    //     pub price: String,
-
-    //     #[html(selector = "span:nth-child(2)", attr = "inner")]
-    //     pub neighborhood: String,
-    // }
-
-    // #[derive(Debug, FromHtml)]
-    // #[html(selector = ".result-meta")]
-    // struct ResultInfo {
-    //     #[html(selector = "span")]
-    //     pub results: Vec<ResultMeta>,
-    // }
-
-    // let listings_meta = ResultInfo::from_html(&escaped_html_text)?;
-
-    // println!("{:?}", listings_meta.results);
-
-
+    let escaped_html_text = reqwest::get("https://longisland.craigslist.org/search/msa")?.text()?;
 
     #[derive(Debug, FromHtml)]
-    struct TestUser {
-        #[html(selector = "p:nth-child(1)", attr = "inner")]
-        name: String,
-
-        #[html(selector = "p:nth-child(2)", attr = "inner")]
-        age: u8,
-
-        #[html(selector = "p:nth-child(3)", attr = "inner")]
-        like_lemon: bool,
+    struct ResultMetas {
+        #[html(selector = "span.result-meta")]
+        pub results: Vec<ResultMeta>,
     }
 
     #[derive(Debug, FromHtml)]
-    // #[html(selector = ".test")]
-    struct TestUsers {
-        #[html(selector = ".test > span")]
-        pub users: Vec<TestUser>,
+    struct ResultMeta {
+        #[html(selector = "span.result-price", attr = "inner", default = "---")]
+        pub price: String,
+
+        #[html(selector = "span.result-hood", attr = "inner", default = "---")]
+        pub neighborhood: String,
     }
 
-    #[derive(Debug, FromHtml)]
-    // #[html(selector = "#thing")]
-    struct Everything {
-        #[html(selector = "#thing")]
-        pub users: Vec<TestUsers>,
+    let result_metas = ResultMetas::from_html(&escaped_html_text)?;
+
+    for result in result_metas.results {
+        println!("Price: {}, Neighboorhood: {}", result.price, result.neighborhood);
     }
-
-
-    let everything = Everything::from_html(r#"<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Title</title>
-        </head>
-        <body>
-            <div id=thing>
-                <div class="test">
-                    <span>
-                        <p>Hexilee</p>
-                        <p>20</p>
-                        <p>true</p>
-                    </span>
-                    <span>
-                        <p>BigBrother</p>
-                        <p>21</p>
-                        <p>false</p>
-                    </span>
-                </div>
-                <div class="test">
-                    <span>
-                        <p>Ryan</p>
-                        <p>20</p>
-                        <p>true</p>
-                    </span>
-                    <span>
-                        <p>Caryn</p>
-                        <p>21</p>
-                        <p>false</p>
-                    </span>
-                </div>
-            </div>
-        </body>
-        </html>"#).unwrap();
-
-
-
-    println!("{:?}", everything);
-
-
 
     Ok(())
 }
